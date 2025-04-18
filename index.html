@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PasswordVault - Secure Password Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔒 PasswordVault</h1>
+            <p>Your personal password manager</p>
+        </header>
+
+        <main>
+            <div class="auth-section" id="authSection">
+                <h2>Enter Master Password</h2>
+                <input type="password" id="masterPassword" placeholder="Master Password">
+                <button onclick="authenticate()">Unlock Vault</button>
+            </div>
+
+            <div class="vault-section" id="vaultSection" style="display: none;">
+                <div class="toolbar">
+                    <button onclick="showAddForm()">Add Password</button>
+                    <button onclick="generatePassword()">Generate Password</button>
+                    <button onclick="exportData()">Export</button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                    <button onclick="document.getElementById('importFile').click()">Import</button>
+                </div>
+
+                <div class="add-form" id="addForm" style="display: none;">
+                    <h3>Add New Password</h3>
+                    <input type="text" id="siteName" placeholder="Website/Service">
+                    <input type="text" id="username" placeholder="Username/Email">
+                    <input type="password" id="password" placeholder="Password">
+                    <button onclick="addPassword()">Save</button>
+                    <button onclick="cancelAdd()">Cancel</button>
+                </div>
+
+                <div class="password-list" id="passwordList">
+                    <!-- Passwords will be displayed here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
