@@ -141,18 +141,75 @@ function deletePassword(id) {
     }
 }
 
-// Generate random password
+// Generate random password with better options
 function generatePassword() {
-    const length = 16;
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
-    let password = '';
+    const options = {
+        length: 16,
+        includeUppercase: true,
+        includeLowercase: true,
+        includeNumbers: true,
+        includeSymbols: true,
+        excludeSimilar: true
+    };
 
-    for (let i = 0; i < length; i++) {
-        password += charset.charAt(Math.floor(Math.random() * charset.length));
+    const result = createPassword(options);
+    document.getElementById('password').value = result;
+    showAddForm();
+}
+
+function createPassword(options = {}) {
+    const defaults = {
+        length: 12,
+        includeUppercase: true,
+        includeLowercase: true,
+        includeNumbers: true,
+        includeSymbols: false,
+        excludeSimilar: false
+    };
+
+    const config = { ...defaults, ...options };
+    let charset = '';
+    let requiredChars = [];
+
+    if (config.includeLowercase) {
+        const lowercase = config.excludeSimilar ? 'abcdefghjkmnpqrstuvwxyz' : 'abcdefghijklmnopqrstuvwxyz';
+        charset += lowercase;
+        requiredChars.push(lowercase[Math.floor(Math.random() * lowercase.length)]);
     }
 
-    document.getElementById('password').value = password;
-    showAddForm();
+    if (config.includeUppercase) {
+        const uppercase = config.excludeSimilar ? 'ABCDEFGHJKMNPQRSTUVWXYZ' : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        charset += uppercase;
+        requiredChars.push(uppercase[Math.floor(Math.random() * uppercase.length)]);
+    }
+
+    if (config.includeNumbers) {
+        const numbers = config.excludeSimilar ? '23456789' : '0123456789';
+        charset += numbers;
+        requiredChars.push(numbers[Math.floor(Math.random() * numbers.length)]);
+    }
+
+    if (config.includeSymbols) {
+        const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        charset += symbols;
+        requiredChars.push(symbols[Math.floor(Math.random() * symbols.length)]);
+    }
+
+    if (charset === '') {
+        charset = 'abcdefghijklmnopqrstuvwxyz';
+        requiredChars.push('a');
+    }
+
+    let password = '';
+    for (const char of requiredChars) {
+        password += char;
+    }
+
+    for (let i = password.length; i < config.length; i++) {
+        password += charset[Math.floor(Math.random() * charset.length)];
+    }
+
+    return password.split('').sort(() => Math.random() - 0.5).join('');
 }
 
 // Initialize on page load
