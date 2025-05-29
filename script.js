@@ -1,26 +1,55 @@
 let masterPassword = '';
 let passwords = [];
 let isAuthenticated = false;
+let crypto;
 
-// Load data from localStorage
-function loadData() {
+// Initialize crypto
+document.addEventListener('DOMContentLoaded', function() {
+    crypto = new PasswordCrypto();
+});
+
+// Load data with decryption
+async function loadData() {
     const savedData = localStorage.getItem('passwordVault');
-    if (savedData) {
-        const data = JSON.parse(savedData);
-        passwords = data.passwords || [];
+    const savedHash = localStorage.getItem('passwordVaultHash');
+
+    if (savedData && savedHash) {
+        try {
+            const currentHash = await crypto.hashPassword(masterPassword);
+            if (currentHash !== savedHash) {
+                throw new Error('Invalid password');
+            }
+
+            const decryptedData = await crypto.decrypt(savedData, masterPassword);
+            const data = JSON.parse(decryptedData);
+            passwords = data.passwords || [];
+        } catch (error) {
+            alert('Failed to decrypt vault');
+            passwords = [];
+        }
     }
 }
 
-// Save data to localStorage
-function saveData() {
+// Save data with encryption
+async function saveData() {
     const data = {
-        passwords: passwords
+        passwords: passwords,
+        timestamp: Date.now()
     };
-    localStorage.setItem('passwordVault', JSON.stringify(data));
+
+    try {
+        const encryptedData = await crypto.encrypt(JSON.stringify(data), masterPassword);
+        const passwordHash = await crypto.hashPassword(masterPassword);
+
+        localStorage.setItem('passwordVault', encryptedData);
+        localStorage.setItem('passwordVaultHash', passwordHash);
+    } catch (error) {
+        alert('Failed to save data');
+    }
 }
 
 // Authentication
-function authenticate() {
+async function authenticate() {
     const inputPassword = document.getElementById('masterPassword').value;
     if (inputPassword.length < 4) {
         alert('Master password must be at least 4 characters');
@@ -33,7 +62,7 @@ function authenticate() {
     document.getElementById('authSection').style.display = 'none';
     document.getElementById('vaultSection').style.display = 'block';
 
-    loadData();
+    await loadData();
     displayPasswords();
 }
 
@@ -56,7 +85,7 @@ function clearAddForm() {
 }
 
 // Add new password
-function addPassword() {
+async function addPassword() {
     const siteName = document.getElementById('siteName').value.trim();
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
@@ -75,7 +104,7 @@ function addPassword() {
     };
 
     passwords.push(newPassword);
-    saveData();
+    await saveData();
     displayPasswords();
     cancelAdd();
 }
@@ -133,10 +162,10 @@ function copyToClipboard(text) {
 }
 
 // Delete password
-function deletePassword(id) {
+async function deletePassword(id) {
     if (confirm('Are you sure you want to delete this password?')) {
         passwords = passwords.filter(p => p.id !== id);
-        saveData();
+        await saveData();
         displayPasswords();
     }
 }
